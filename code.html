@@ -1,0 +1,149 @@
+
+<html>
+    <head>
+        <title>Homework 4</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            #firstdiv{
+                margin:60px;
+                text-align: center;
+            }
+        </style>
+        <script type="text/javascript">
+           function validateFormInput(field){
+            var url = document.getElementById("url").value; 
+            var urlAfetrSplit = url.split(".");
+                if(url == "" || url == "Undefined" || url == " "){
+                    alert("Please enter a XML URL we can process "); //empty input in form
+                    return(false);
+                }
+                if(urlAfetrSplit[urlAfetrSplit.length-1] != "xml"){
+                    alert("Please enter valid XML file which we can process to get the table"); //when entered value is not in .xml format
+                    return(false);
+                }      
+                var xmlFile;
+                function loadXML(url) { 
+                    if (window.XMLHttpRequest)
+                    {
+                        xhttp=new XMLHttpRequest();
+                    }
+                    else
+                    {
+                        xhttp=new ActiveXObject("Microsoft.XMLHTTP");
+                    }                  
+                    try{
+                        xhttp.open("GET",url,false); 
+                        xhttp.send();
+                        xmlFile=xhttp.responseXML;
+                        if(xmlFile == null){
+                            alert("Please enter valid XML file which we can process to get the table");
+                            return(false);
+                        }else{
+                        return xmlFile;
+                        }
+                    }
+                    catch(Error){
+                        alert("Entered XML file does not exists, please recheck your input");
+                    }
+                }   
+                xmlFile = loadXML(url);  
+                if(xmlFile.documentElement.nodeName=="parsererror")
+                {
+                    alert("Error in XML File structure"); 
+                    return;
+                }
+                else{
+                    if (window.ActiveXObject){
+                    if (xmlFile.parseError.errorCode != 0){
+                        var xmlFileError = xmlFile.parseError;
+                        generateError(xmlFile);
+                        hwin = window.open("", "Error", "height=300,width=340");
+                        hWin.document.write(html_text);
+                    }
+                    else{
+                        var xmlData = createHtmlTable(xmlFile);
+                        if(xmlData != false){
+                        createHtmlTable(xmlFile);
+                        hWin = window.open("", "Assignment4", "height=600,width=1000");
+                        hWin.document.write(html_text); 
+                        }
+                    }
+                }
+                else{
+                    var xmlData = createHtmlTable(xmlFile);
+                    if(xmlData != false){
+                    xmlFile.onload=createHtmlTable(xmlFile);
+                    hWin = window.open("", "Assignment4", "scrollbars=1,height=600,width=1000");
+                    hWin.document.write(html_text);
+                    }
+                }
+                hWin.document.close();
+                }    
+            }
+            function createHtmlTable (xmlFile){
+                ELEMENT_NODE = 1; 
+                root=xmlFile.DocumentElement;
+                html_text="<html><head><title>Online Newspaper Listings</title></head><body>";
+                html_text+="<table border='2'>";
+                nodevalue=xmlFile.getElementsByTagName("Data");
+                html_text+="<tbody>";
+                html_text+="<tr>";
+                for(i=0;i<nodevalue.length;i++){
+                header = nodevalue[i].childNodes[0].nodeValue;
+                html_text+="<th>"+header+"</th>";                   
+                }
+                html_text+="</tr>";
+                row = xmlFile.getElementsByTagName("Row");
+                if (row.length == 0){
+                    alert("Error!! No news Paper entry exist");
+                    return false;
+                }
+                else{
+                    for (i=0;i<row.length;i++){
+                        rowNodeValue = row[i].childNodes;
+                        html_text+="<tr>";
+                            for (j=0 ; j<rowNodeValue.length;j++){
+                                if(row[i].childNodes[j].nodeType==ELEMENT_NODE){
+                                    if(row[i].childNodes[j].nodeName=="Logo"){
+                                        html_text+="<td><img style = 'display:block;' width = 100% height = 100% src='"+row[i].childNodes[j].childNodes[0].nodeValue+"'></td>";
+                                    }
+                                    else if(row[i].childNodes[j].nodeName=="Location"){
+                                        html_text+="<td>";
+                                        for(k = 0; k < row[i].childNodes[j].childNodes.length; k++){
+                                            html_text+="<ul>";
+                                            if                                                                  (row[i].childNodes[j].childNodes[k].nodeType==ELEMENT_NODE){
+                                            html_text+="<li>" + row[i].childNodes[j]. childNodes[k].childNodes[0].nodeValue + "</li>";
+                                            }
+                                            html_text+="</ul>";
+                                        }
+                                        html_text+="</td>";
+                                    }
+                                    else if(row[i].childNodes[j].nodeName=="HomePage"){
+                                        var link = row[i].childNodes[j].childNodes[0].nodeValue;
+                                        html_text+="<td><a href = "+ link +">" + link + "</a></td>";
+                                    }
+                                    else{
+                                        html_text+="<td>"+row[i].childNodes[j].childNodes[0].nodeValue+"</td>";
+                                    }
+                                }
+                            }
+                    }
+                }
+                html_text+="</tbody>"; html_text+="</table>";
+                html_text+="</body></html>"; 
+            }
+        </script>
+    </head>
+    <body>
+        <div id="firstdiv">
+           <b> Enter URL for Newspapr List XML File </b> <br />   <br />
+            <form name="form" method="POST" id="location">
+                <input type="text" name="NewspaperName" id="url"> 
+                <br /><br />
+                <input type="button" name="submit" value="Submit Query" onClick="validateFormInput(this.form)" />
+            </form>
+        </div>
+        <NOSCRIPT></NOSCRIPT>
+    </body>
+</html>
